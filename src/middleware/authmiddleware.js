@@ -1,44 +1,80 @@
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
 
-dotenv.config();
-
-// Middleware xác thực người dùng
 const authMiddleware = (req, res, next) => {
-  // Lấy token từ headers
+  const authHeader = req.headers.authorization;
+  const id = req.headers.id;
+  console.log(id);
+  if (!authHeader) {
+    return res.status(401).json({
+      mess: "Token xác thực không được cung cấp",
+      status: "ERROR",
+    });
+  }
 
-  // Tách token từ chuỗi "Bearer <token>"
-  const token = req.headers.split(" ")[1];
-  console.log(token);
-  console.log(process.env.ACCESS_TOKEN_SECRET);
-  // Xác thực token
+  const token = authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      mess: "Token xác thực không hợp lệ",
+      status: "ERROR",
+    });
+  }
+
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
       return res.status(403).json({
-        mess: "Invalid authentication token",
+        mess: "Token xác thực không hợp lệ",
         status: "ERROR",
       });
     }
 
-    // Đưa thông tin user vào req để các middleware khác có thể sử dụng
-    req.user = user;
+    if (!user.payload?.isAdmin) {
+      next();
+    } else {
+      return res.status(403).json({
+        mess: "Quyền truy cập bị từ chối",
+        status: "ERROR",
+      });
+    }
+  });
+};
+const authUserMiddleware = (req, res, next) => {
+  const userID = req.params.id;
+  const authHeader = req.headers.authorization;
 
-    // Nếu bạn có kiểm tra quyền admin, hãy làm điều đó ở đây
-    // const { payload } = user;
-    // if (payload.isAdmin) {
-    //   next();
-    // } else {
-    //   return res.status(403).json({
-    //     mess: "Permission denied",
-    //     status: "ERROR",
-    //   });
-    // }
+  if (!authHeader) {
+    return res.status(401).json({
+      mess: "Token xác thực không được cung cấp",
+      status: "ERROR",
+    });
+  }
 
-    // Nếu không cần kiểm tra quyền, tiếp tục đến middleware tiếp theo
-    next();
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({
+      mess: "Token xác thực không hợp lệ",
+      status: "ERROR",
+    });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({
+        mess: "Token xác thực không hợp lệ",
+        status: "ERROR",
+      });
+    }
+
+    // Kiểm tra xem userID từ request có khớp với ID trong token không
+    if (user?.payload.id === userID) {
+      next();
+    } else {
+      return res.status(403).json({
+        mess: "Quyền truy cập bị từ chối",
+        status: "ERROR",
+      });
+    }
   });
 };
 
-module.exports = {
-  authMiddleware,
-};
+module.exports = { authMiddleware, authUserMiddleware };

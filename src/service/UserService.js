@@ -1,6 +1,6 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { generralAccesToken, generralRefreshToken } = require("./Jwtservier");
+const { generralAccesToken, generralRefreshToken } = require("./Jwtservice");
 
 require("dotenv").config();
 
@@ -34,52 +34,48 @@ const createUser = async (newUser) => {
     throw error;
   }
 };
-
 const loginUser = async (userLogin) => {
-  return new Promise(async (resolve, reject) => {
-    const { name, email, password, confirmPassword, phone } = userLogin;
-    try {
-      // Tìm người dùng bằng email
-      const checkUser = await User.findOne({ email });
+  const { email, password } = userLogin;
+  try {
+    const checkUser = await User.findOne({ email });
 
-      // Kiểm tra xem người dùng có tồn tại không
-      if (!checkUser) {
-        resolve({
-          status: "err",
-          mess: "User not found",
-        });
-      }
-
-      // So sánh mật khẩu
-      const comparePassword = bcrypt.compareSync(password, checkUser.password);
-      if (!comparePassword) {
-        resolve({
-          status: "err",
-          mess: "Incorrect email or password",
-        });
-      }
-
-      // Tạo access token và refresh token
-      const ACCESS_TOKEN_SECRET = generralAccesToken({
-        id: checkUser.id,
-        isAdmin: checkUser.isAdmin,
+    if (!checkUser) {
+      return res.status(400).json({
+        status: "err",
+        mess: "User not found",
       });
-      const REFRESH_TOKEN_SECRET = generralRefreshToken({
-        id: checkUser.id,
-        isAdmin: checkUser.isAdmin,
-      });
-
-      // Trả về kết quả thành công
-      resolve({
-        status: "ok",
-        mess: "Login successful",
-        ACCESS_TOKEN_SECRET,
-        REFRESH_TOKEN_SECRET,
-      });
-    } catch (error) {
-      reject(error);
     }
-  });
+
+    const comparePassword = await bcrypt.compare(password, checkUser.password);
+    if (!comparePassword) {
+      return res.status(401).json({
+        status: "err",
+        mess: "Incorrect email or password",
+      });
+    }
+
+    const ACCESS_TOKEN_SECRET = generralAccesToken({
+      id: checkUser.id,
+      isAdmin: checkUser.isAdmin,
+    });
+    const REFRESH_TOKEN_SECRET = generralRefreshToken({
+      id: checkUser.id,
+      isAdmin: checkUser.isAdmin,
+    });
+
+    return res.status(200).json({
+      status: "ok",
+      mess: "Login successful",
+      ACCESS_TOKEN_SECRET: ACCESS_TOKEN_SECRET,
+      REFRESH_TOKEN_SECRET: REFRESH_TOKEN_SECRET,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      mess: "An error occurred",
+      error: error.message,
+    });
+  }
 };
 
 const updateUser = async (id, data) => {
@@ -117,7 +113,7 @@ const deleteUser = async (id) => {
       };
     }
 
-    await User.findByIdAndDelete(id);
+    // await User.findByIdAndDelete(id);
 
     return {
       status: "ok",
@@ -143,16 +139,13 @@ const getAll = async () => {
 };
 
 const getAllUserbyId = async (id) => {
-  return new Promise(async () => {
-    try {
-      const UserbyId = await User.find(id);
-      res({
-        data: UserbyId,
-      });
-    } catch (error) {}
-  });
+  try {
+    const UserbyId = await User.findById(id); // Sử dụng findById thay vì find
+    return { data: UserbyId }; // Trả về dữ liệu dưới dạng đối tượng
+  } catch (error) {
+    throw new Error(error.message); // Ném lỗi để hàm gọi bên ngoài xử lý
+  }
 };
-
 module.exports = {
   createUser,
   loginUser,
