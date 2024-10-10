@@ -114,7 +114,7 @@ const updateProduct = async (productId, updateData) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       updateData,
-      { new: true, runValidators: true } 
+      { new: true, runValidators: true }
     );
 
     if (!updatedProduct) {

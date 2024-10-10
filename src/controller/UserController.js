@@ -1,11 +1,11 @@
 const User = require("../models/UserModel");
 const UserService = require("../service/UserService");
-const Jwtservice = require("../service/Jwtservice");
+const Jwtservice = require("../../src/service/JwtService");
 const bcrypt = require("bcrypt");
 const {
   generralAccesToken,
   generralRefreshToken,
-} = require("../service/Jwtservice");
+} = require("../../src/service/JwtService");
 
 require("dotenv").config();
 

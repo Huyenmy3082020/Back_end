@@ -1,6 +1,9 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { generralAccesToken, generralRefreshToken } = require("./Jwtservice");
+const {
+  generralAccesToken,
+  generralRefreshToken,
+} = require("../service/JwtService");
 
 require("dotenv").config();
 
