@@ -65,7 +65,7 @@ const authUserMiddleware = (req, res, next) => {
       });
     }
 
-    // Kiểm tra xem userID từ request có khớp với ID trong token không
+
     if (user?.payload.id === userID) {
       next();
     } else {
