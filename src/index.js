@@ -6,12 +6,13 @@ const port = 2000;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-
+const errorHandler = require("./middleware/errorHandler");
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
 app.use(cookieParser());
+app.use(errorHandler);
 routes(app);
 
 // Define a route for the root path

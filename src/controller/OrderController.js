@@ -3,14 +3,16 @@ const Orderservice = require("../service/OrderService");
 const createOrder = async (req, res) => {
   try {
     const {
-      paymentMethos,
-      itemsPrice,
-      shippingPrice,
-      totalPrice,
-      fullname,
-      address,
+      orderItems,
+      payment,
+      itemPrices,
       city,
       phone,
+      name,
+      shippingPrice,
+      address,
+      totalPrice,
+      user,
     } = req.body;
 
     const result = await Orderservice.createOrder(req.body);
