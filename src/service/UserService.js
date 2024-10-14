@@ -149,6 +149,7 @@ const getAllUserbyId = async (id) => {
     throw new Error(error.message); // Ném lỗi để hàm gọi bên ngoài xử lý
   }
 };
+
 module.exports = {
   createUser,
   loginUser,

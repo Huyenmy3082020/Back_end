@@ -12,5 +12,7 @@ router.delete("/deleteProduct/:id", ProductController.deleteProduct);
 router.delete("/destroyProduct/:id", ProductController.destroyProduct);
 router.delete("/destroyProduct/:id", ProductController.destroyProduct);
 router.delete("/deleteMany", ProductController.deleteMany);
+router.get("/product/:type", ProductController.getProductType);
+router.get("/getAllType", ProductController.getAllType);
 
 module.exports = router;

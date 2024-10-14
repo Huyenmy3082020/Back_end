@@ -200,6 +200,25 @@ const getProductbyId = async (productId) => {
     }
   });
 };
+const getProductType = async (type) => {
+  try {
+    const productType = await Product.find({ type });
+    return { data: productType };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const getAllType = async () => {
+  try {
+    const types = await Product.distinct("type");
+    return {
+      data: types,
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 const restoreProduct = async (data) => {
   try {
@@ -228,4 +247,6 @@ module.exports = {
   restoreProduct,
   destroyProduct,
   deleteMany,
+  getAllType,
+  getProductType,
 };

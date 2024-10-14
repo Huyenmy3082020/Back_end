@@ -58,6 +58,31 @@ const getProduct = async (req, res) => {
     });
   }
 };
+const getAllType = async (req, res) => {
+  try {
+    const result = await ProductService.getAllType();
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      error: error.message,
+    });
+  }
+};
+
+const getProductType = async (req, res) => {
+  try {
+    const type = req.params.type;
+    const result = await ProductService.getProductType(type);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      error: error.message,
+    });
+  }
+};
+
 const getProductTrash = async (req, res) => {
   try {
     const result = await ProductService.getProductTrash(); // Gọi hàm service
@@ -193,4 +218,6 @@ module.exports = {
   restoreProductController,
   destroyProduct,
   deleteMany,
+  getProductType,
+  getAllType,
 };

@@ -83,10 +83,8 @@ const createOrder = async (newProduct) => {
       data: createdOrder,
     };
   } catch (error) {
-    // Xử lý lỗi khi có vấn đề xảy ra
     console.log("Error creating order:", error);
 
-    // Trả về mã trạng thái lỗi cùng thông tin lỗi
     return {
       status: "err",
       message: error.message || "Đã xảy ra lỗi không xác định.",
@@ -96,6 +94,54 @@ const createOrder = async (newProduct) => {
   }
 };
 
+const deleteOrder = async (orderId) => {
+  try {
+    // Tìm đơn hàng theo ID và cập nhật các thuộc tính
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        isPaid: true, // Đánh dấu là đã thanh toán
+        paidAt: new Date(), // Ghi lại thời gian thanh toán
+        deleted: true, // Thêm trường để đánh dấu xóa mềm, nếu cần
+      },
+      { new: true } // Trả về bản ghi đã cập nhật
+    );
+
+    // Kiểm tra xem đơn hàng có được cập nhật hay không
+    if (!updatedOrder) {
+      return {
+        status: "err",
+        message: "Đơn hàng không tồn tại.",
+      };
+    }
+
+    return {
+      status: "ok",
+      message: "Sản phẩm đã được hủy thành công",
+    };
+  } catch (error) {
+    return {
+      status: "err",
+      message: error.message,
+    };
+  }
+};
+
+const getOrder = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const allUser = await Order.find();
+      resolve({
+        status: "ok",
+        data: allUser,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   createOrder,
+  getOrder,
+  deleteOrder,
 };

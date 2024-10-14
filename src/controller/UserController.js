@@ -76,27 +76,27 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const accessToken = generralAccesToken({
+    // Sử dụng `await` để đợi việc tạo accessToken và refreshToken hoàn tất
+    const accessToken = await generralAccesToken({
       id: checkUser.id,
       isAdmin: checkUser.isAdmin,
     });
-    const refreshToken = generralRefreshToken({
+    const refreshToken = await generralRefreshToken({
       id: checkUser.id,
       isAdmin: checkUser.isAdmin,
-    });
-    console.log(refreshToken);
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Chỉ gửi cookie qua HTTPS trong môi trường production
-      sameSite: "Strict", // Ngăn chặn gửi cookie cùng các yêu cầu cross-site
-      maxAge: 24 * 60 * 60 * 1000, // Thời gian sống của cookie (1 ngày)
     });
 
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict", // Ngăn chặn gửi cookie cùng các yêu cầu cross-site
+    });
+
+    // Trả về kết quả thành công với accessToken và refreshToken
     return res.status(200).json({
       status: "ok",
       message: "Login successful",
-      ACCESS_TOKEN_SECRET: accessToken,
-      REFRESH_TOKEN_SECRET: refreshToken,
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
     console.error("Error in loginUser:", error);
@@ -178,35 +178,40 @@ const getAllUserbyId = async (req, res) => {
     });
   }
 };
-
-const refreshUserToken = async (req, res) => {
-  console.log(
-    " req.cookies.REFRESH_TOKEN_SECRET",
-    req.cookies.REFRESH_TOKEN_SECRET
-  );
+const refreshTokenController = async (req, res) => {
   try {
-    const token = req.cookies.REFRESH_TOKEN_SECRET;
+    // Lấy token từ headers
+    const authHeader = req.headers.authorization;
+    console.log(authHeader);
 
-    if (!token) {
-      return res.status(400).json({
+    if (!authHeader) {
+      return res.status(401).json({
         status: "err",
-        message: "The token is required",
+        message: "Authorization header is required",
       });
     }
 
-    const response = await Jwtservice.refreshTokenJwt(token);
-    console.log(response);
+    const token = authHeader.split(" ")[1]; // Tách token từ header
+    if (!token) {
+      return res.status(400).json({
+        status: "err",
+        message: "Token is required",
+      });
+    }
 
-    return res.status(200).json(response);
+    // Gọi hàm refreshToken từ Jwtservice
+    const result = await Jwtservice.refreshToken(token);
+
+    // Trả về kết quả
+    return res.status(200).json(result);
   } catch (error) {
-    console.error(error); // Để ghi log lỗi
     return res.status(500).json({
-      status: "err",
-      message: error.message || "An error occurred",
+      status: "error",
+      message: "An unexpected error occurred",
+      error: error.message,
     });
   }
 };
-
 const logoutUser = async (req, res) => {
   try {
     res.clearCookie("resfresh_token");
@@ -226,8 +231,8 @@ module.exports = {
   loginUser,
   updateUser,
   deleteUser,
-  refreshUserToken,
   getAll,
   getAllUserbyId,
   logoutUser,
+  refreshTokenController,
 };

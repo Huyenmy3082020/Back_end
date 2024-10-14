@@ -7,18 +7,28 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors());
 app.use(cookieParser());
 app.use(errorHandler);
+app.use(
+  cors({
+    origin: "http://localhost:7000", // Địa chỉ front-end của bạn
+    credentials: true, // Đảm bảo cho phép gửi cookie hoặc thông tin xác thực
+  })
+);
+
 routes(app);
 
 // Define a route for the root path
 app.get("/", (req, res) => {
   res.send("Hello, Express!");
 });
+
+app.options("/api/user/refreshtoken", cors()); // Xử lý preflight cho route này
+
 const MONGO_DB = "DDZleMPJY4GL7Vsp";
 mongoose
   .connect(

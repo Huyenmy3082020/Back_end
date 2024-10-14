@@ -11,10 +11,10 @@ const {
 router.post("/sign-up", UserController.createUser);
 router.post("/sign-in", UserController.loginUser);
 router.post("/logout", UserController.logoutUser);
-router.put("/update-user/:id", UserController.updateUser);
+router.put("/update-user/:id", authMiddleware, UserController.updateUser);
 router.delete("/delete-user/:id", authMiddleware, UserController.deleteUser);
 router.get("/getALl", UserController.getAll);
 router.get("/getUser/:id", authUserMiddleware, UserController.getAllUserbyId);
-router.post("/refresh-token", UserController.refreshUserToken);
+router.post("/refreshtoken", UserController.refreshTokenController);
 
 module.exports = router;

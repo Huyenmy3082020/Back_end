@@ -24,5 +24,32 @@ const createOrder = async (req, res) => {
     });
   }
 };
+const getOrder = async (req, res) => {
+  try {
+    const response = await Orderservice.getOrder();
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(404).json({
+      message: error,
+    });
+  }
+};
+const deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
 
-module.exports = { createOrder };
+    const result = await Orderservice.deleteOrder(orderId);
+
+    if (result.status === "err") {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      error: error.message,
+    });
+  }
+};
+module.exports = { createOrder, getOrder, deleteOrder };

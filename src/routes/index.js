@@ -6,4 +6,5 @@ const routes = (app) => {
   app.use("/product", ProductRouter);
   app.use("/order", OrderRouter);
 };
+
 module.exports = routes;
