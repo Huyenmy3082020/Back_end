@@ -7,11 +7,12 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
-
+const { Client, Environment } = require("@paypal/checkout-server-sdk");
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
+
 app.use(errorHandler);
 app.use(
   cors({
@@ -22,13 +23,15 @@ app.use(
 
 routes(app);
 
-// Define a route for the root path
 app.get("/", (req, res) => {
   res.send("Hello, Express!");
 });
 
-app.options("/api/user/refreshtoken", cors()); // Xử lý preflight cho route này
-
+const environment = new Environment.Sandbox(
+  process.env.PAYPAL_CLIENT_ID,
+  process.env.PAYPAL_CLIENT_SECRET
+);
+const client = new Client(environment);
 const MONGO_DB = "DDZleMPJY4GL7Vsp";
 mongoose
   .connect(

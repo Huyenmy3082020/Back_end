@@ -88,10 +88,11 @@ const loginUser = async (req, res) => {
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      sameSite: "Strict", // Ngăn chặn gửi cookie cùng các yêu cầu cross-site
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
-    // Trả về kết quả thành công với accessToken và refreshToken
     return res.status(200).json({
       status: "ok",
       message: "Login successful",
@@ -182,7 +183,7 @@ const refreshTokenController = async (req, res) => {
   try {
     // Lấy token từ headers
     const authHeader = req.headers.authorization;
-    console.log(authHeader);
+    console.log("authHeader", authHeader);
 
     if (!authHeader) {
       return res.status(401).json({

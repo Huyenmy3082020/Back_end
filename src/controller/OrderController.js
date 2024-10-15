@@ -14,8 +14,10 @@ const createOrder = async (req, res) => {
       totalPrice,
       user,
     } = req.body;
+    console.log(req.body);
 
     const result = await Orderservice.createOrder(req.body);
+
     return res.status(200).json(result);
   } catch (error) {
     return res.status(200).json({
@@ -52,4 +54,21 @@ const deleteOrder = async (req, res) => {
     });
   }
 };
-module.exports = { createOrder, getOrder, deleteOrder };
+
+const getOrderPaid = async (req, res) => {
+  try {
+    const result = await Orderservice.getOrderPa();
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      error: error.message,
+    });
+  }
+};
+module.exports = {
+  createOrder,
+  getOrder,
+  deleteOrder,
+  getOrderPaid,
+};

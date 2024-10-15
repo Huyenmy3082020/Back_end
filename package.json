@@ -10,6 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "@paypal/react-paypal-js": "^8.7.0",
     "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
     "cookie-parser": "^1.4.7",
@@ -24,7 +26,9 @@
     "mongoose": "^8.5.3",
     "mongoose-delete": "^1.0.2",
     "mongoose-sequence": "^6.0.1",
-    "mongoose-slug-generator": "^1.0.4"
+    "mongoose-slug-generator": "^1.0.4",
+    "paypal-rest-sdk": "^1.8.1",
+    "react-paypal-button-v2": "^2.6.3"
   },
   "devDependencies": {
     "morgan": "^1.10.0",

@@ -6,7 +6,7 @@ const generralAccesToken = async (payload) => {
   const access_token = jwt.sign(
     payload, // payload không cần đặt trong đối tượng { payload }
     process.env.ACCESS_TOKEN, // Khóa bí mật cho access token
-    { expiresIn: "30s" } // Đặt thời gian hết hạn của access token
+    { expiresIn: "1h" } // Đặt thời gian hết hạn của access token
   );
   return access_token;
 };
@@ -23,6 +23,8 @@ const generralRefreshToken = async (payload) => {
 const refreshToken = (token) => {
   return new Promise((resolve, reject) => {
     try {
+      const refresh_token = req.cookies.refresh_token;
+      console.log("refresh_token", refresh_token);
       jwt.verify(token, process.env.REFRESH_TOKEN, async (err, user) => {
         if (err) {
           return reject({

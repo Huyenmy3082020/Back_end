@@ -1,10 +1,11 @@
+const { getOrderPaid } = require("../controller/OrderController");
 const Order = require("../models/OrderModel");
 const Product = require("../models/ProductModel");
 
 const createOrder = async (newProduct) => {
   const {
-    orderItems,
-    payment,
+    orderItems, // Danh sách sản phẩm
+    payment, // Phương thức thanh toán
     itemPrices,
     city,
     phone,
@@ -15,56 +16,16 @@ const createOrder = async (newProduct) => {
     user,
   } = newProduct;
 
-  const errorDetails = []; // Lưu trữ các lỗi sản phẩm
+  const errorDetails = [];
 
   try {
-    // Cập nhật số lượng tồn kho sản phẩm
-    await Promise.all(
-      orderItems.map(async (order) => {
-        try {
-          const product = await Product.findOneAndUpdate(
-            {
-              _id: order.product,
-              countInStock: { $gte: order.amount },
-            },
-            {
-              $inc: {
-                countInStock: -order.amount,
-                selled: +order.amount,
-              },
-            },
-            { new: true }
-          );
-
-          // Nếu sản phẩm không đủ số lượng hoặc không tồn tại
-          if (!product) {
-            throw new Error(
-              `Sản phẩm với ID ${order.product} không đủ số lượng tồn kho hoặc không tồn tại.`
-            );
-          }
-
-          return product;
-        } catch (error) {
-          // Lưu lỗi cho sản phẩm vào errorDetails
-          errorDetails.push({
-            productId: order.product,
-            message:
-              error.message ||
-              "Đã xảy ra lỗi trong quá trình cập nhật sản phẩm.",
-          });
-        }
-      })
-    );
-
-    // Kiểm tra nếu có lỗi nào trong errorDetails
-    if (errorDetails.length > 0) {
-      throw new Error(
-        "Có lỗi xảy ra trong quá trình cập nhật sản phẩm. Chi tiết: " +
-          JSON.stringify(errorDetails)
-      );
+    // Kiểm tra phương thức thanh toán và cập nhật trạng thái `isPaid` cho đơn hàng
+    let isPaid = false;
+    if (payment === "Thanh toán bằng VNPay") {
+      isPaid = true;
     }
 
-    // Nếu tất cả sản phẩm được cập nhật thành công, tạo đơn hàng
+    // Tạo đơn hàng trước, sau đó mới cập nhật số lượng sản phẩm
     const createdOrder = await Order.create({
       orderItems,
       payment,
@@ -76,8 +37,54 @@ const createOrder = async (newProduct) => {
       address,
       totalPrice,
       user,
+      isPaid, // Cập nhật trạng thái thanh toán
     });
 
+    // Cập nhật số lượng tồn kho sản phẩm cho từng sản phẩm trong đơn hàng
+    await Promise.all(
+      orderItems.map(async (order) => {
+        try {
+          const product = await Product.findOneAndUpdate(
+            {
+              _id: order.product, // ID của sản phẩm
+              countInStock: { $gte: order.amount }, // Kiểm tra tồn kho
+            },
+            {
+              $inc: {
+                countInStock: -order.amount, // Giảm tồn kho
+                selled: +order.amount, // Tăng số lượng bán
+              },
+            },
+            { new: true }
+          );
+
+          if (!product) {
+            throw new Error(
+              `Sản phẩm với ID ${order.product} không đủ số lượng tồn kho hoặc không tồn tại.`
+            );
+          }
+
+          return product;
+        } catch (error) {
+          errorDetails.push({
+            productId: order.product,
+            message:
+              error.message ||
+              "Đã xảy ra lỗi trong quá trình cập nhật sản phẩm.",
+          });
+        }
+      })
+    );
+
+    // Kiểm tra nếu có lỗi nào trong quá trình cập nhật sản phẩm
+    if (errorDetails.length > 0) {
+      throw new Error(
+        "Có lỗi xảy ra trong quá trình cập nhật sản phẩm. Chi tiết: " +
+          JSON.stringify(errorDetails)
+      );
+    }
+
+    // Nếu tất cả sản phẩm được cập nhật thành công
     return {
       status: "ok",
       data: createdOrder,
@@ -89,7 +96,7 @@ const createOrder = async (newProduct) => {
       status: "err",
       message: error.message || "Đã xảy ra lỗi không xác định.",
       code: error.status || 500,
-      details: errorDetails.length > 0 ? errorDetails : undefined, // Thêm thông tin lỗi nếu có
+      details: errorDetails.length > 0 ? errorDetails : undefined, // Trả về chi tiết lỗi
     };
   }
 };
@@ -100,8 +107,6 @@ const deleteOrder = async (orderId) => {
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
-        isPaid: true, // Đánh dấu là đã thanh toán
-        paidAt: new Date(), // Ghi lại thời gian thanh toán
         deleted: true, // Thêm trường để đánh dấu xóa mềm, nếu cần
       },
       { new: true } // Trả về bản ghi đã cập nhật
@@ -140,8 +145,16 @@ const getOrder = async () => {
     }
   });
 };
+const getOrderPa = async () => {
+  const OrderPaid = await Order.find({ isPaid: true });
+  return {
+    status: "ok",
+    data: OrderPaid,
+  };
+};
 module.exports = {
   createOrder,
   getOrder,
   deleteOrder,
+  getOrderPa,
 };
