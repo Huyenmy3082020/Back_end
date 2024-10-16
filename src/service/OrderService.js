@@ -1,11 +1,10 @@
-const { getOrderPaid } = require("../controller/OrderController");
 const Order = require("../models/OrderModel");
 const Product = require("../models/ProductModel");
 
 const createOrder = async (newProduct) => {
   const {
-    orderItems, // Danh sách sản phẩm
-    payment, // Phương thức thanh toán
+    orderItems,
+    payment,
     itemPrices,
     city,
     phone,
@@ -145,16 +144,9 @@ const getOrder = async () => {
     }
   });
 };
-const getOrderPa = async () => {
-  const OrderPaid = await Order.find({ isPaid: true });
-  return {
-    status: "ok",
-    data: OrderPaid,
-  };
-};
+
 module.exports = {
   createOrder,
   getOrder,
   deleteOrder,
-  getOrderPa,
 };
