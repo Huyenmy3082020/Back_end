@@ -183,8 +183,6 @@ const refreshTokenController = async (req, res) => {
   try {
     // Lấy token từ headers
     const authHeader = req.headers.authorization;
-    console.log("authHeader", authHeader);
-
     if (!authHeader) {
       return res.status(401).json({
         status: "err",

@@ -1,7 +1,5 @@
-// service/CategoryService.js
-
 const Category = require("../models/CategoryModel");
-
+const Product = require("../models/ProductModel");
 const createCategory = async (categoryData) => {
   const category = new Category(categoryData);
   await category.save();
@@ -25,6 +23,23 @@ const getCategoryByName = async (name) => {
     throw err; // Ném lỗi ra ngoài để xử lý
   }
 };
+const getCategoryBySlug = async (slug) => {
+  try {
+    // Tìm danh mục theo slug
+    const category = await Category.findOne({ slug });
+    if (!category) {
+      throw new Error("Category not found");
+    }
+
+    const products = await Product.find({ type: category._id });
+    console.log(products);
+
+    return { category, products };
+  } catch (err) {
+    console.error("Error fetching category or products:", err);
+    throw err;
+  }
+};
 
 const updateCategory = async (id, categoryData) => {
   return await Category.findByIdAndUpdate(id, categoryData, { new: true });
@@ -41,4 +56,5 @@ module.exports = {
   updateCategory,
   getCategoryByName,
   deleteCategory,
+  getCategoryBySlug,
 };

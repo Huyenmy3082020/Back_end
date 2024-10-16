@@ -55,9 +55,31 @@ const getCategoryByname = async (req, res) => {
     });
   }
 };
+const getCategoryByslug = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+
+    const response = await CategoryService.getCategoryBySlug(slug);
+
+    if (!response) {
+      return res.status(404).json({
+        status: "err",
+        message: "Category not found",
+      });
+    }
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   createCategory,
   getOrder,
   getCategoryByname,
+  getCategoryByslug,
 };
