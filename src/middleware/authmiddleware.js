@@ -62,7 +62,8 @@ const authUserMiddleware = (req, res, next) => {
         status: "ERROR",
       });
     }
-
+    console.log(user);
+    console.log(userID);
     if (user?.id === userID) {
       next();
     } else {

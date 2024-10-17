@@ -36,6 +36,18 @@ const getOrder = async (req, res) => {
     });
   }
 };
+const getOrderByUser = async (req, res) => {
+  try {
+    const useID = req.params.id;
+
+    const response = await Orderservice.getOrderByUser(useID);
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(404).json({
+      message: error,
+    });
+  }
+};
 const deleteOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -59,4 +71,5 @@ module.exports = {
   createOrder,
   getOrder,
   deleteOrder,
+  getOrderByUser,
 };

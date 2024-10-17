@@ -145,8 +145,23 @@ const getOrder = async () => {
   });
 };
 
+const getOrderByUser = async (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const orderUser = await Order.findById(userId);
+      resolve({
+        status: "ok",
+        data: orderUser,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   createOrder,
   getOrder,
+  getOrderByUser,
   deleteOrder,
 };
