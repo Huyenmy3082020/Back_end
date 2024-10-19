@@ -1,14 +1,15 @@
 const User = require("../models/UserModel");
+const Jwtservice = require("../../src/service/JwtService");
 const bcrypt = require("bcrypt");
 const {
   generralAccesToken,
   generralRefreshToken,
-} = require("../service/JwtService");
+} = require("../../src/service/JwtService");
 
 require("dotenv").config();
 
 const createUser = async (newUser) => {
-  const { name, email, password, phone } = newUser;
+  const { name, email, password } = newUser;
   try {
     const checkUser = await User.findOne({ email });
 
@@ -25,7 +26,6 @@ const createUser = async (newUser) => {
       name,
       email,
       password: hash,
-      phone,
     });
 
     return {
@@ -37,48 +37,50 @@ const createUser = async (newUser) => {
     throw error;
   }
 };
-const loginUser = async (userLogin) => {
-  const { email, password } = userLogin;
-  try {
-    const checkUser = await User.findOne({ email });
 
-    if (!checkUser) {
-      return res.status(400).json({
-        status: "err",
-        mess: "User not found",
+const loginUser = (userLogin) => {
+  return new Promise(async (resolve, reject) => {
+    const { email, password } = userLogin;
+    try {
+      // Kiểm tra xem người dùng có tồn tại không
+      const checkUser = await User.findOne({ email });
+      if (!checkUser) {
+        return resolve({
+          status: "ERR",
+          message: "The user is not defined",
+        });
+      }
+
+      // So sánh mật khẩu
+      const comparePassword = bcrypt.compareSync(password, checkUser.password);
+      if (!comparePassword) {
+        return resolve({
+          status: "ERR",
+          message: "The password or user is incorrect",
+        });
+      }
+
+      // Tạo access_token và refresh_token
+      const accessToken = await generralAccesToken({
+        id: checkUser.id,
+        isAdmin: checkUser.isAdmin,
       });
-    }
 
-    const comparePassword = await bcrypt.compare(password, checkUser.password);
-    if (!comparePassword) {
-      return res.status(401).json({
-        status: "err",
-        mess: "Incorrect email or password",
+      const refreshToken = await generralRefreshToken({
+        id: checkUser.id,
+        isAdmin: checkUser.isAdmin,
       });
+
+      resolve({
+        status: "OK",
+        message: "SUCCESS",
+        accessToken,
+        refreshToken,
+      });
+    } catch (error) {
+      reject(error);
     }
-
-    const ACCESS_TOKEN_SECRET = generralAccesToken({
-      id: checkUser.id,
-      isAdmin: checkUser.isAdmin,
-    });
-    const REFRESH_TOKEN_SECRET = generralRefreshToken({
-      id: checkUser.id,
-      isAdmin: checkUser.isAdmin,
-    });
-
-    return res.status(200).json({
-      status: "ok",
-      mess: "Login successful",
-      ACCESS_TOKEN_SECRET: ACCESS_TOKEN_SECRET,
-      REFRESH_TOKEN_SECRET: REFRESH_TOKEN_SECRET,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: "err",
-      mess: "An error occurred",
-      error: error.message,
-    });
-  }
+  });
 };
 
 const updateUser = async (id, data) => {

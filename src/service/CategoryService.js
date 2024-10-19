@@ -25,14 +25,12 @@ const getCategoryByName = async (name) => {
 };
 const getCategoryBySlug = async (slug) => {
   try {
-    // Tìm danh mục theo slug
     const category = await Category.findOne({ slug });
     if (!category) {
       throw new Error("Category not found");
     }
 
     const products = await Product.find({ type: category._id });
-    console.log(products);
 
     return { category, products };
   } catch (err) {

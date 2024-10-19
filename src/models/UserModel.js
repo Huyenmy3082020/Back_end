@@ -1,19 +1,12 @@
 const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    address: { type: String, required: true },
-    avatar: { type: String, required: true },
-    date: { type: Date },
-    gender: { type: String },
-    nationaly: { type: String },
-    avatar: { type: String, required: true },
+    address: { type: String },
+    avatar: { type: String },
     isAdmin: { type: Boolean, default: false, required: true },
-    phone: { type: Number, required: true },
-    access_token: { type: String, required: true },
-    refresh_token: { type: String, required: true },
   },
   {
     timestamps: true,

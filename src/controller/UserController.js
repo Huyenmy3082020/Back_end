@@ -1,13 +1,8 @@
 const User = require("../models/UserModel");
 const UserService = require("../service/UserService");
-const Jwtservice = require("../../src/service/JwtService");
-const bcrypt = require("bcrypt");
-const {
-  generralAccesToken,
-  generralRefreshToken,
-} = require("../../src/service/JwtService");
 
 require("dotenv").config();
+const Jwtservice = require("../service/JwtService");
 
 const createUser = async (req, res) => {
   try {
@@ -48,62 +43,44 @@ const createUser = async (req, res) => {
     });
   }
 };
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+
+const loginUserController = async (req, res) => {
   try {
-    console.log(email, password);
+    const { email, password } = req.body;
+    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+    const isCheckEmail = reg.test(email);
+
+    // Kiểm tra input
     if (!email || !password) {
       return res.status(400).json({
-        status: "err",
-        message: "Không được bỏ trống email hoặc password",
+        status: "ERR",
+        message: "The input is required",
       });
-    }
-
-    const checkUser = await User.findOne({ email });
-    if (!checkUser) {
+    } else if (!isCheckEmail) {
       return res.status(400).json({
-        status: "err",
-        message: "Không tìm thấy người dùng",
+        status: "ERR",
+        message: "The input is email",
       });
     }
 
-    // So sánh mật khẩu
-    const comparePassword = await bcrypt.compare(password, checkUser.password);
-    if (!comparePassword) {
-      return res.status(401).json({
-        status: "err",
-        message: "Thông tin tài khoản hoặc mật khẩu không chính xác",
-      });
-    }
-
-    // Sử dụng `await` để đợi việc tạo accessToken và refreshToken hoàn tất
-    const accessToken = await generralAccesToken({
-      id: checkUser.id,
-      isAdmin: checkUser.isAdmin,
-    });
-    const refreshToken = await generralRefreshToken({
-      id: checkUser.id,
-      isAdmin: checkUser.isAdmin,
-    });
+    const response = await UserService.loginUser({ email, password });
+    const { refreshToken, ...data } = response;
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      sameSite: "Strict",
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      sameSite: "strict",
       path: "/",
     });
 
     return res.status(200).json({
-      status: "ok",
-      message: "Login successful",
-      accessToken,
+      ...data,
       refreshToken,
     });
   } catch (error) {
-    console.error("Error in loginUser:", error);
     return res.status(500).json({
-      status: "err",
-      message: "An internal server error occurred",
+      status: "ERR",
+      message: "Internal Server Error",
       error: error.message,
     });
   }
@@ -179,29 +156,19 @@ const getAllUserbyId = async (req, res) => {
     });
   }
 };
+
 const refreshTokenController = async (req, res) => {
   try {
-    // Lấy token từ headers
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({
-        status: "err",
-        message: "Authorization header is required",
-      });
-    }
-
-    const token = authHeader.split(" ")[1]; // Tách token từ header
-    if (!token) {
+    const refresh_token = req.cookies.refresh_token;
+    if (!refresh_token) {
       return res.status(400).json({
         status: "err",
-        message: "Token is required",
+        message: "Refresh token is required",
       });
     }
 
-    // Gọi hàm refreshToken từ Jwtservice
-    const result = await Jwtservice.refreshToken(token);
+    const result = await Jwtservice.refreshToken(refresh_token);
 
-    // Trả về kết quả
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({
@@ -211,23 +178,30 @@ const refreshTokenController = async (req, res) => {
     });
   }
 };
+
 const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("resfresh_token");
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      path: "/",
+    });
 
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error(error); // Để ghi log lỗi
-    return res.status(500).json({
-      status: "err",
-      message: error.message || "An error occurred",
+    return res.status(200).json({
+      status: "OK",
+      message: "Logout successfully",
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
     });
   }
 };
 
 module.exports = {
   createUser,
-  loginUser,
+  loginUserController,
   updateUser,
   deleteUser,
   getAll,

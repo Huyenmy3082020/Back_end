@@ -86,7 +86,6 @@ const alterAmount = async (productId, altam) => {
 
 const deleteAllCard = async (cartId, productId) => {
   try {
-    // Tìm giỏ hàng theo ID và loại bỏ sản phẩm theo ID sản phẩm
     const updatedCart = await Cart.findByIdAndUpdate(
       cartId,
       { $pull: { items: { product: productId } } }, // Loại bỏ sản phẩm theo ID
