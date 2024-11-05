@@ -50,7 +50,6 @@ const loginUserController = async (req, res) => {
     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
     const isCheckEmail = reg.test(email);
 
-    // Kiểm tra input
     if (!email || !password) {
       return res.status(400).json({
         status: "ERR",

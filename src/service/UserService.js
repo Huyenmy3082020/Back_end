@@ -38,49 +38,47 @@ const createUser = async (newUser) => {
   }
 };
 
-const loginUser = (userLogin) => {
-  return new Promise(async (resolve, reject) => {
-    const { email, password } = userLogin;
-    try {
-      // Kiểm tra xem người dùng có tồn tại không
-      const checkUser = await User.findOne({ email });
-      if (!checkUser) {
-        return resolve({
-          status: "ERR",
-          message: "The user is not defined",
-        });
-      }
+const loginUser = async (userLogin) => {
+  const { email, password } = userLogin;
+  try {
+    const checkUser = await User.findOne({ email });
 
-      // So sánh mật khẩu
-      const comparePassword = bcrypt.compareSync(password, checkUser.password);
-      if (!comparePassword) {
-        return resolve({
-          status: "ERR",
-          message: "The password or user is incorrect",
-        });
-      }
-
-      // Tạo access_token và refresh_token
-      const accessToken = await generralAccesToken({
-        id: checkUser.id,
-        isAdmin: checkUser.isAdmin,
-      });
-
-      const refreshToken = await generralRefreshToken({
-        id: checkUser.id,
-        isAdmin: checkUser.isAdmin,
-      });
-
-      resolve({
-        status: "OK",
-        message: "SUCCESS",
-        accessToken,
-        refreshToken,
-      });
-    } catch (error) {
-      reject(error);
+    if (!checkUser) {
+      return {
+        status: "ERR",
+        message: "Người dùng không tồn tại",
+      };
     }
-  });
+
+    // Kiểm tra mật khẩu
+    const comparePassword = bcrypt.compareSync(password, checkUser.password);
+    if (!comparePassword) {
+      return {
+        status: "ERR",
+        message: "Mật khẩu hoặc người dùng không đúng",
+      };
+    }
+
+    // Tạo access token và refresh token
+    const accessToken = await generralAccesToken({
+      id: checkUser.id,
+      isAdmin: checkUser.isAdmin,
+    });
+
+    const refreshToken = await generralRefreshToken({
+      id: checkUser.id,
+      isAdmin: checkUser.isAdmin,
+    });
+
+    return {
+      status: "OK",
+      message: "Đăng nhập thành công",
+      accessToken,
+      refreshToken,
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 const updateUser = async (id, data) => {

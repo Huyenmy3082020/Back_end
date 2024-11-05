@@ -1,3 +1,6 @@
+const Product = require("../models/ProductModel");
+const Cart = require("../models/CartModel");
+
 const ProductService = require("../service/Productservice");
 
 const createProduct = async (req, res) => {
@@ -85,8 +88,8 @@ const getProductType = async (req, res) => {
 
 const getProductTrash = async (req, res) => {
   try {
-    const result = await ProductService.getProductTrash(); // Gọi hàm service
-    return res.status(200).json(result); // Trả về kết quả JSON cho người dùng
+    const result = await ProductService.getProductTrash();
+    return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({
       status: "err",
@@ -208,6 +211,37 @@ const restoreProductController = async (req, res) => {
   }
 };
 
+const search = async (req, res) => {
+  const { query } = req.body;
+  try {
+    const regexQuery = new RegExp(query, "i");
+
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: regexQuery } },
+        { description: { $regex: regexQuery } },
+        { category: { $regex: regexQuery } },
+      ],
+    });
+    if (products.length === 0) {
+      return res.status(404).json({
+        status: "err",
+        message: "Không tìm thấy sản phẩm phù hợp.",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "err",
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getProduct,
@@ -220,4 +254,5 @@ module.exports = {
   deleteMany,
   getProductType,
   getAllType,
+  search,
 };

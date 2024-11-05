@@ -1,4 +1,5 @@
 const Product = require("../models/ProductModel");
+const Cart = require("../models/CartModel");
 
 const createProduct = async (newProduct) => {
   try {
@@ -45,13 +46,11 @@ const getProduct = async (limit, page, sort, filter) => {
         const ObjectFilter = {};
         ObjectFilter[filter[0]] = filter[1];
         const label = filter[0];
-        console.log(ObjectFilter);
-
         const allProductFilter = await Product.find({
           [label]: { $regex: filter[1] },
         })
-          .limit(limit) // Thêm limit vào query
-          .skip(page * limit); // Sử dụng skip thay vì page
+          .limit(limit)
+          .skip(page * limit);
         const totalProductFilter = Object.keys(allProductFilter).length;
         resolve({
           status: "ok",
@@ -237,6 +236,11 @@ const restoreProduct = async (data) => {
   }
 };
 
+const search = async (data) => {
+  try {
+  } catch (error) {}
+};
+
 module.exports = {
   createProduct,
   getProduct,
@@ -249,4 +253,5 @@ module.exports = {
   deleteMany,
   getAllType,
   getProductType,
+  search,
 };

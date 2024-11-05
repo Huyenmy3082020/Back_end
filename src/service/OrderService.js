@@ -1,7 +1,6 @@
 const Order = require("../models/OrderModel");
 const Product = require("../models/ProductModel");
 
-
 const createOrder = async (newProduct) => {
   const {
     orderItems,
@@ -145,7 +144,6 @@ const getOrder = async () => {
     }
   });
 };
-
 
 module.exports = {
   createOrder,
